@@ -1,10 +1,16 @@
 const express = require('express')
 const router = express.Router()
-const UserController = require('../controllers/userController')
+const userController = require('../controller/user')
 
-router.post('/login', UserController.login)
-router.post('/register', UserController.register)
+router.get('/',(req,res)=>{
+res.status(200).json('masuk user')
+})
 
-router.post('/googleSignIn', UserController.googleSignIn)
+
+router.post('/register',userController.registrasi)
+router.post('/signin',userController.signin)
+router.post('/googlesignin',userController.googleSignin)
+
+
 
 module.exports = router

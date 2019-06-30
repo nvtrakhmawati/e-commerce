@@ -1,6 +1,13 @@
 const express = require('express')
-const route = express.Router()
+const router =  express.Router()
+const userRouter = require('./user')
+const productRouter = require('./product')
 
-route.use('/user', require('./user'))
+// router.get('/',(req,res)=>{
+//   res.send(`masuk ke halaman index`)
+// })
 
-module.exports = route
+router.use('/users',userRouter)
+router.use('/products', productRouter)
+
+module.exports = router

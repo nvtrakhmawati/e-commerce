@@ -1,27 +1,26 @@
-if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-    require('dotenv').config();
-}
-
+require('dotenv').config()
 const express = require('express')
 const app = express()
-const cors = require('cors')
-const port = 3000
-const route = require('./routes')
+const port = process.env.PORT
+const routes = require('./routes')
 const mongoose = require('mongoose')
+const morgan = require('morgan')
+const NODE_ENV = process.env.NODE_ENV || "development"
+
+
+mongoose.set('useNewUrlParser', true)
+var cors = require('cors')
+
+mongoose.connect('mongodb+srv://dienulha0308:<Jakarta01>@ecommerce-iyw1p.gcp.mongodb.net/test?retryWrites=true' +NODE_ENV,{useNewUrlParser: true})
 
 app.use(cors())
-app.use(express.urlencoded({ extended:false }))
+app.use(morgan('tiny'))
 app.use(express.json())
+app.use(express.urlencoded({extends:true}))
 
-mongoose.connect('mongodb://localhost/eCommerce', {useNewUrlParser : true}, (err) => {
-    if(err) console.log('mongoose connection failed');
-    else console.log('mongoose connection success');
-});
+app.use('/',routes)
 
-app.use('/', route)
+app.listen(port, () => console.log(`Example app listening on port port!`))
 
-app.listen(port, () => {
-    console.log(`listening on port port`)
-})
 
 module.exports = app

@@ -1,140 +1,185 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const app = require('../app');
+const chai = require('chai'),
+  chaiHttp = require('chai-http'),
+  expect = chai.expect,
+  app = require('../app'),
+  clearUser = require('./helper/clearUser')
+
 
 chai.use(chaiHttp)
 
-const expect = chai.expect;
+before(function (done) {
+  const newUser = {
+      name: "name",
+      email: "email@mail.com",
+      password: "password"
+  }
 
-describe('User CRUD', function(){
-    describe('POST /user/register', function(){
-        it('should send an object with 201 status code', function(done){
-            let user_input = {
-                name: 'Novita', 
-                email:'novita@gmail.com', 
-                password:'1234'
-            }
-            chai
+  chai
+      .request(app)
+      .post('/user/register')
+      .send(newUser)
+      .end(function (err, res) {
+          userId = res.body._id
+          done()
+      })
+})
+
+after(function (done) {
+  clearUser(done)
+})
+
+describe('User tests', function () {
+  describe('GET /users', function () {
+      it("should send an array of object with status code 200", function (done) {
+          chai
               .request(app)
-              .post('/user/register')
-              .send(user_input)
-              .then(function(res){
-                //validate
-                expect(res).to.have.status(201);
-                expect(res.body).to.be.an('object');
-
-                //new validation to confirm user is save in database
-                expect(res.body).to.have.property('_id');
-                expect(res.body).to.have.property('name');
-                expect(res.body).to.have.property('email');
-                expect(res.body).to.have.property('password');
-
-                //validation to confirm password is encrypted
-                expect(res.body.password).to.not.be.eql(user_input.password)
-                done()
-              })
-              .catch(function(err){
-                  console.log(err)
-              })
-        })
-    })
-    describe('POST /user/login', function(){
-        it('should return 200 and token for valid credentials', function(done){
-            let valid_input ={
-                email: 'novita@gmail.com',
-                password: '1234'
-            }
-            chai
+              .get('/users')
+              .end(function (err, res) {
+                  expect(err).to.be.null;
+                  expect(res).to.have.status(200);
+                  expect(res.body).to.be.an('array');
+                  done();
+              });
+      })
+  })
+  describe("POST /users/login", function () {
+      it("Should send a token generated from payload of logged in user", function (done) {
+          const input = { email: "email@mail.com", password: "password" }
+          chai
               .request(app)
-              .post('/user/login')
-              .send(valid_input)
-              .then(function(res){
-                //validate  
-                expect(res).to.have.status(200);
-                expect(res.body).to.be.an('object');
-
-                // new validation that user has been login
-                expect(res.body).to.have.property('token');
-                done()
+              .post("/users/login")
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(200)
+                  done()
               })
-              .catch(function(err){
-                  console.log(err)
-              })
-        })
-    })
-    describe('Duplicate email for register', function(){
-        it('should throw error with status 500', function(done){
-            let valid_input ={
-                name: 'Novita',
-                email: 'novita@gmail.com',
-                password: '1234'
-            }
-            chai
+      })
+  })
+  // No matching profile
+  describe("POST /users/login", function () {
+      it("Should send an error because no matching profile found", function (done) {
+          const input = { password: "password" }
+          chai
               .request(app)
-              .post('/user/register')
-              .send(valid_input)
-              .then(function(res){
-                //validate  
-                expect(res).to.have.status(500);
-                expect(res.body).to.be.an('object');
-
-                expect(res.body).to.have.property('message');
-                console.log(res.body.message)
-                done()
+              .post("/users/login")
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(400)
+                  done()
               })
-              .catch(function(err){
-                  console.log(err)
-              })
-        })
-    })
-    describe('invalid format email', function(){
-        it('should throw error with status 500', function(done){
-            let valid_input ={
-                name: 'Novita',
-                email: 'novita@gmail.com',
-                password: '1234'
-            }
-            chai
+      })
+  })
+  // No matching profile
+  describe("POST /users/login", function () {
+      it("Should send an error beacuse no matching profile found", function (done) {
+          const input = { email: "email@mail.com" }
+          chai
               .request(app)
-              .post('/user/register')
-              .send(valid_input)
-              .then(function(res){
-                //validate  
-                expect(res).to.have.status(500);
-                expect(res.body).to.be.an('object');
-
-                expect(res.body).to.have.property('message');
-                console.log(res.body.message)
-                done()
+              .post("/users/login")
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(500)
+                  done()
               })
-              .catch(function(err){
-                  console.log(err)
-              })
-        })
-    })
-    describe('invalid length of password', function(){
-        it('should throw error with status 500', function(done){
-            let valid_input ={
-                name: 'Novita',
-                email: 'novita@gmail.com',
-                password: '1234'
-            }
-            chai
+      })
+  })
+  describe("POST /user/register", function () {
+      it("Should send an object of recently registered user", function (done) {
+          const input = { name: "name", email: "newEmail@mail.com", password: "password" }
+          chai
               .request(app)
-              .post('/user/register')
-              .send(valid_input)
-              .then(function(res){
-                //validate  
-                expect(res).to.have.status(500);
-                expect(res.body).to.be.an('object');
-
-                expect(res.body).to.have.property('message');
-                console.log(res.body.message)
-                done()
+              .post('/users/register')
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(201)
+                  expect(res.body).to.be.an("object")
+                  expect(res.body).to.have.property("name")
+                  expect(res.body).to.have.property("email")
+                  expect(res.body).to.have.property("password")
+                  expect(res.body.name).to.equal(input.name)
+                  expect(res.body.email).to.equal(input.email)
+                  expect(res.body.password).to.not.equal(input.password)
+                  done()
               })
-              .catch(function(err){
-                  console.log(err)
+      })
+  })
+  // Must register unique email
+  describe("POST /users/register", function () {
+      it("Should return an error for using registered email with status 500", function (done) {
+          const input = { name: "name", email: "email@mail.com", password: "password" }
+          chai
+              .request(app)
+              .post('/users/register')
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(500)
+                  done()
               })
-        })
-    })
+      })
+  })
+  // Must register with valid email
+  describe("POST /users/register", function () {
+      it("Should return an error for using an invalid email with status 500", function (done) {
+          const input = { name: "name", email: "email", password: "password" }
+          chai
+              .request(app)
+              .post('/users/register')
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(500)
+                  done()
+              })
+      })
+  }),
+  // Not registered with a name
+  describe("POST /users/register", function () {
+      it("Should return an error for not using an name with status 500", function (done) {
+          const input = { email: "email", password: "password" }
+          chai
+              .request(app)
+              .post('/users/register')
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(500)
+                  done()
+              })
+      })
+  })
+  // Not registered with an email
+  describe("POST /users/register", function () {
+      it("Should return an error for not using an email with status 500", function (done) {
+          const input = { name: "name", password: "password" }
+          chai
+              .request(app)
+              .post('/users/register')
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(500)
+                  done()
+              })
+      })
+  })
+  // Not registered with a password
+  describe("POST /users/register", function () {
+      it("Should return an error for not using a password with status 500", function (done) {
+          const input = { name: "name", email: "email" }
+          chai
+              .request(app)
+              .post('/users/register')
+              .send(input)
+              .end(function (err, res) {
+                  expect(err).to.be.null
+                  expect(res).to.have.status(500)
+                  done()
+              })
+      })
+  })
 })

@@ -1,6 +1,5 @@
-const mongoose = require('mongoose');
-const {Schema} = mongoose;
-const Helper = require('../helpers/helper')
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema;
 
 let validEmail = function (email) {
     let re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -25,23 +24,24 @@ let userSchema = new Schema({
     },
     email: {
         type: String,
-        required: [true, "Please fill in your email"],
+        required: [true, "Please in your email address"],
         validate: [
-            { validator: validEmail, message: 'Please use a valid email address' },
-            { validator: uniqueEmail, message: "Email address is already taken" }
+            { validator: validEmail, msg: 'Please use a valid email address' },
+            { validator: uniqueEmail, msg: "Email address is already taken" }
         ]
     },
     password: {
         type: String,
         required: [true, "Please fill in your password"]
-    }
+    },
+    role: {
+        type: String,
+        default: "customer"
+    },
+    carts: [{type : Schema.Types.ObjectId, ref : 'Product' }]
 })
 
-userSchema.pre('save', function (next) {
-    this.password = Helper.hashPassword(this.password)
-    next()
-})
-
-const User = new mongoose.model("User", userSchema)
+let User = new mongoose.model('User', userSchema)
 
 module.exports = User
+
