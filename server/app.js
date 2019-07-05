@@ -11,7 +11,7 @@ const NODE_ENV = process.env.NODE_ENV || "development"
 mongoose.set('useNewUrlParser', true)
 var cors = require('cors')
 
-mongoose.connect('mongodb+srv://dienulha0308:<Jakarta01>@ecommerce-iyw1p.gcp.mongodb.net/test?retryWrites=true' +NODE_ENV,{useNewUrlParser: true})
+mongoose.connect('mongodb+srv://database:database@database-c6k6t.gcp.mongodb.net/hacktivoverflow?retryWrites=true&w=majority' +NODE_ENV,{useNewUrlParser: true})
 
 app.use(cors())
 app.use(morgan('tiny'))
